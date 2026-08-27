@@ -1,0 +1,62 @@
+---
+- name: Deploy C3PO Mail API
+  hosts: c3po_servers
+  become: yes # Permite rodar os comandos como root (sudo) no servidor
+  vars:
+    app_dir: "/opt/c3pomail"
+    jar_source: "../../target/c3pomail.jar"
+    service_source: "../c3pomail.service"
+    env_source: "../c3pomail.env.exemplo"
+
+  tasks:
+    - name: Garantir que o diretório da aplicação existe
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Garantir que o diretório de configuração e logs existe
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - /etc/c3pomail
+        - /opt/c3pomail/logs
+
+    - name: Parar serviço c3pomail antes de atualizar o arquivo (evitar lock)
+      systemd:
+        name: c3pomail
+        state: stopped
+      ignore_errors: yes # Ignora erro caso seja o primeiro deploy e o serviço não exista ainda
+
+    - name: Copiar o novo arquivo executável JAR para o servidor
+      copy:
+        src: "{{ jar_source }}"
+        dest: "{{ app_dir }}/c3pomail.jar"
+        mode: '0755'
+
+    - name: Copiar o arquivo Systemd
+      copy:
+        src: "{{ service_source }}"
+        dest: /etc/systemd/system/c3pomail.service
+        mode: '0644'
+      notify: Reload Systemd
+
+    - name: Copiar o arquivo de variáveis de ambiente (somente se não existir)
+      copy:
+        src: "{{ env_source }}"
+        dest: /etc/c3pomail/c3pomail.env
+        mode: '0600'
+        force: no # Se force for 'no', ele não sobrescreve o arquivo. Mantém a sua senha de produção intacta!
+
+    - name: Iniciar e Habilitar o serviço c3pomail
+      systemd:
+        name: c3pomail
+        enabled: yes
+        state: started
+
+  handlers:
+    - name: Reload Systemd
+      systemd:
+        daemon_reload: yes
