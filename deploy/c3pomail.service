@@ -1,0 +1,48 @@
+# ============================================
+# c3pomail.service — Serviço systemd para Oracle Linux 9
+# ============================================
+# Instalação:
+#   1. Copie este arquivo para /etc/systemd/system/c3pomail.service
+#   2. Execute: sudo systemctl daemon-reload
+#   3. Execute: sudo systemctl enable c3pomail
+#   4. Execute: sudo systemctl start c3pomail
+#
+# Verificar status:
+#   sudo systemctl status c3pomail
+#   sudo journalctl -u c3pomail -f
+# ============================================
+
+[Unit]
+Description=API c3pomail - Centralização de Envios de E-mail
+Documentation=https://github.com/seu-repositorio/c3pomail
+After=network.target
+
+[Service]
+Type=simple
+User=c3pomail
+Group=c3pomail
+WorkingDirectory=/opt/c3pomail
+
+# Variáveis de ambiente (SMTP, API Key, Remetente)
+EnvironmentFile=/opt/c3pomail/c3pomail.env
+
+# Execução do JAR com Java 21
+ExecStart=/usr/bin/java -jar /opt/c3pomail/c3pomail.jar --spring.profiles.active=prod
+
+# Reinicialização automática em caso de falha
+Restart=on-failure
+RestartSec=10
+
+# Limites de segurança
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/c3pomail/logs
+
+# Limites de recursos
+LimitNOFILE=65536
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

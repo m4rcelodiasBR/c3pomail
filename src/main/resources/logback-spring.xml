@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    logback-spring.xml — API c3pomail
+    Logs rotativos diários com retenção de 90 dias.
+    PROIBIDO logar o corpo (body) do e-mail para evitar vazamento de dados sensíveis.
+-->
+<configuration>
+
+    <!-- ========== Propriedades ========== -->
+    <property name="DIRETORIO_LOGS" value="/opt/c3pomail/logs"/>
+    <property name="NOME_ARQUIVO" value="c3pomail"/>
+    <property name="PADRAO_LOG"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%level] [IP:%X{ipOrigem:-N/A}] [Protocolo:%X{protocolo:-N/A}] [Destinatario:%X{destinatario:-N/A}] [Assunto:%X{assunto:-N/A}] - %msg%n"/>
+
+    <!-- ========== Console (Desenvolvimento) ========== -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${PADRAO_LOG}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- ========== Arquivo Rotativo (Produção) ========== -->
+    <appender name="ARQUIVO_ROTATIVO" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${DIRETORIO_LOGS}/${NOME_ARQUIVO}.log</file>
+        <encoder>
+            <pattern>${PADRAO_LOG}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${DIRETORIO_LOGS}/${NOME_ARQUIVO}-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>90</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- ========== Perfil: Desenvolvimento (apenas console) ========== -->
+    <springProfile name="default">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <!-- ========== Perfil: Produção (console + arquivo) ========== -->
+    <springProfile name="prod">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ARQUIVO_ROTATIVO"/>
+        </root>
+    </springProfile>
+
+    <!-- ========== Silencia logs verbosos de terceiros ========== -->
+    <logger name="org.springframework.security" level="WARN"/>
+    <logger name="org.apache" level="WARN"/>
+
+</configuration>

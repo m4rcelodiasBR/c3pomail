@@ -1,0 +1,40 @@
+# ============================================
+# .gitignore — API c3pomail
+# ============================================
+
+# === Artefatos compilados ===
+target/
+*.jar
+*.war
+*.class
+
+# === IDEs ===
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# === Variáveis de ambiente e credenciais ===
+*.env
+.env
+.env.*
+application-prod.properties
+application-prod.yml
+
+# === Logs locais ===
+*.log
+logs/
+
+# === Sistema operacional ===
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# === Maven Wrapper (gerado automaticamente) ===
+!.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
