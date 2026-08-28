@@ -1,624 +1,113 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex, nofollow">
-    <title>C3PO Mail — Painel de Teste</title>
-    <style>
-        /* ========== Reset e Base ========== */
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        :root {
-            --cor-fundo: #0f1117;
-            --cor-superficie: #1a1d27;
-            --cor-borda: #2a2d3a;
-            --cor-borda-foco: #6366f1;
-            --cor-primaria: #6366f1;
-            --cor-primaria-hover: #4f46e5;
-            --cor-sucesso: #10b981;
-            --cor-erro: #ef4444;
-            --cor-alerta: #f59e0b;
-            --cor-texto: #e2e8f0;
-            --cor-texto-secundario: #94a3b8;
-            --cor-texto-placeholder: #64748b;
-            --raio-borda: 10px;
-            --sombra: 0 4px 24px rgba(0, 0, 0, 0.3);
-            --transicao: all 0.2s ease;
-        }
-
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: var(--cor-fundo);
-            color: var(--cor-texto);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            line-height: 1.6;
-        }
-
-        /* ========== Container Principal ========== */
-        .painel-container {
-            width: 100%;
-            max-width: 640px;
-            background: var(--cor-superficie);
-            border: 1px solid var(--cor-borda);
-            border-radius: 16px;
-            box-shadow: var(--sombra);
-            overflow: hidden;
-        }
-
-        /* ========== Cabeçalho ========== */
-        .painel-cabecalho {
-            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
-            padding: 28px 32px;
-            border-bottom: 1px solid var(--cor-borda);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .painel-cabecalho h1 {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: #fff;
-            letter-spacing: -0.02em;
-        }
-
-        .painel-cabecalho .subtitulo {
-            font-size: 0.8rem;
-            color: #a5b4fc;
-            font-weight: 400;
-            display: block;
-            margin-top: 2px;
-        }
-
-        /* ========== Indicador de Status (Health) ========== */
-        .status-api {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.78rem;
-            font-weight: 600;
-            padding: 6px 14px;
-            border-radius: 20px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            cursor: default;
-            transition: var(--transicao);
-        }
-
-        .status-api.ativo { color: var(--cor-sucesso); border-color: rgba(16, 185, 129, 0.3); }
-        .status-api.inativo { color: var(--cor-erro); border-color: rgba(239, 68, 68, 0.3); }
-        .status-api.verificando { color: var(--cor-alerta); border-color: rgba(245, 158, 11, 0.3); }
-
-        .status-indicador {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-        }
-
-        .status-api.ativo .status-indicador {
-            background: var(--cor-sucesso);
-            box-shadow: 0 0 6px var(--cor-sucesso);
-            animation: pulsar 2s infinite;
-        }
-
-        .status-api.inativo .status-indicador { background: var(--cor-erro); box-shadow: 0 0 6px var(--cor-erro); }
-        .status-api.verificando .status-indicador { background: var(--cor-alerta); box-shadow: 0 0 6px var(--cor-alerta); }
-
-        @keyframes pulsar {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
-        }
-
-        /* ========== Corpo do Formulário ========== */
-        .painel-corpo { padding: 28px 32px; }
-
-        .campo-grupo {
-            margin-bottom: 20px;
-        }
-
-        .campo-grupo label {
-            display: block;
-            font-size: 0.82rem;
-            font-weight: 600;
-            color: var(--cor-texto-secundario);
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .campo-grupo label .obrigatorio {
-            color: var(--cor-erro);
-            margin-left: 2px;
-        }
-
-        .campo-grupo input,
-        .campo-grupo textarea {
-            width: 100%;
-            padding: 12px 14px;
-            background: var(--cor-fundo);
-            border: 1px solid var(--cor-borda);
-            border-radius: var(--raio-borda);
-            color: var(--cor-texto);
-            font-size: 0.92rem;
-            font-family: inherit;
-            transition: var(--transicao);
-            outline: none;
-        }
-
-        .campo-grupo input::placeholder,
-        .campo-grupo textarea::placeholder {
-            color: var(--cor-texto-placeholder);
-        }
-
-        .campo-grupo input:focus,
-        .campo-grupo textarea:focus {
-            border-color: var(--cor-borda-foco);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-        }
-
-        .campo-grupo input.campo-erro,
-        .campo-grupo textarea.campo-erro {
-            border-color: var(--cor-erro);
-            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
-        }
-
-        .campo-grupo textarea {
-            min-height: 140px;
-            resize: vertical;
-        }
-
-        .campo-dica {
-            font-size: 0.75rem;
-            color: var(--cor-texto-placeholder);
-            margin-top: 4px;
-        }
-
-        .campo-erro-msg {
-            font-size: 0.78rem;
-            color: var(--cor-erro);
-            margin-top: 4px;
-            display: none;
-        }
-
-        /* ========== Botões ========== */
-        .painel-acoes {
-            display: flex;
-            gap: 12px;
-            padding: 0 32px 28px;
-        }
-
-        .botao {
-            flex: 1;
-            padding: 13px 20px;
-            border: none;
-            border-radius: var(--raio-borda);
-            font-size: 0.92rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transicao);
-            font-family: inherit;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .botao-enviar {
-            background: var(--cor-primaria);
-            color: #fff;
-        }
-
-        .botao-enviar:hover:not(:disabled) {
-            background: var(--cor-primaria-hover);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
-        }
-
-        .botao-enviar:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .botao-limpar {
-            background: transparent;
-            color: var(--cor-texto-secundario);
-            border: 1px solid var(--cor-borda);
-        }
-
-        .botao-limpar:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--cor-texto);
-        }
-
-        /* ========== Loader ========== */
-        .loader {
-            width: 18px;
-            height: 18px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: girar 0.6s linear infinite;
-            display: none;
-        }
-
-        @keyframes girar {
-            to { transform: rotate(360deg); }
-        }
-
-        /* ========== Resposta ========== */
-        .painel-resposta {
-            margin: 0 32px 28px;
-            padding: 16px 18px;
-            border-radius: var(--raio-borda);
-            font-size: 0.88rem;
-            display: none;
-            animation: aparecer 0.3s ease;
-            word-break: break-word;
-        }
-
-        @keyframes aparecer {
-            from { opacity: 0; transform: translateY(-8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .painel-resposta.sucesso {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            color: var(--cor-sucesso);
-        }
-
-        .painel-resposta.erro {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: var(--cor-erro);
-        }
-
-        .resposta-protocolo {
-            font-family: 'Consolas', 'Courier New', monospace;
-            font-size: 0.82rem;
-            margin-top: 6px;
-            opacity: 0.8;
-        }
-
-        /* ========== Rodapé ========== */
-        .painel-rodape {
-            padding: 14px 32px;
-            border-top: 1px solid var(--cor-borda);
-            text-align: center;
-            font-size: 0.72rem;
-            color: var(--cor-texto-placeholder);
-        }
-
-        /* ========== Responsivo ========== */
-        @media (max-width: 480px) {
-            .painel-cabecalho { padding: 20px; flex-direction: column; gap: 12px; align-items: flex-start; }
-            .painel-corpo { padding: 20px; }
-            .painel-acoes { padding: 0 20px 20px; flex-direction: column; }
-            .painel-resposta { margin: 0 20px 20px; }
-        }
-    </style>
+    <title>Painel de Testes | C3PO Mail API</title>
+    <link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="lib/bootstrap-icons/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="lib/quill/quill.snow.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-<div class="painel-container">
-    <!-- Cabeçalho com Status do Health Check -->
-    <header class="painel-cabecalho">
-        <div>
-            <h1>C3PO Mail <span class="subtitulo">Painel de Teste — Uso Interno</span></h1>
+    <!-- Header / Nav -->
+    <nav class="navbar fixed-top bg-premium-dark">
+        <div class="container-fluid px-4">
+            <div class="d-flex flex-column align-items-start">
+                <span class="brand-title fs-5 mb-0"><i class="bi bi-envelope-paper me-2"></i>C3PO Mail API</span>
+                <span class="brand-subtitle" style="font-size: 0.85rem;">Painel de teste - Uso interno</span>
+            </div>
+
+            <div class="d-flex align-items-center">
+                <div id="statusIndicator" class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span id="textoStatus">Aguardando...</span>
+                </div>
+            </div>
         </div>
-        <div id="statusApi" class="status-api verificando">
-            <span class="status-indicador"></span>
-            <span id="statusTexto">Verificando...</span>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container my-4"> <!-- my-5 para my-4 (menos margem topo/fundo) -->
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-xl-9">
+                <div class="card card-premium my-3">
+                    <div class="card-header card-header-premium">
+                        <!-- Reduzido de h4 para fs-5 -->
+                        <h5 class="mb-0 fs-5"><i class="bi bi-send-fill me-2"></i>Enviar e-mails</h5>
+                    </div>
+                    <div class="card-body p-3 p-md-4"> <!-- Reduzido padding interno (era p-4 p-md-5) -->
+                        <form id="formularioEmail" onsubmit="event.preventDefault(); enviarFormulario();">
+                            
+                            <div class="form-floating mb-3"> <!-- Reduzido de mb-4 para mb-3 -->
+                                <input type="password" class="form-control" id="campoApiKey" placeholder="Sua chave secreta" autocomplete="off">
+                                <label for="campoApiKey"><i class="bi bi-key-fill me-2"></i>Chave de API (X-API-KEY)</label>
+                                <div id="erroApiKey" class="invalid-feedback"></div>
+                            </div>
+
+                            <div class="row mb-3"> <!-- Reduzido de mb-4 para mb-3 -->
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="campoDestinatarios" placeholder="Separados por vírgula">
+                                        <label for="campoDestinatarios"><i class="bi bi-person-lines-fill me-2"></i>Destinatários</label>
+                                        <div id="erroDestinatarios" class="invalid-feedback"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="campoCopias" placeholder="Separados por vírgula">
+                                        <label for="campoCopias"><i class="bi bi-people-fill me-2"></i>Cópias Ocultas (BCC) - Opc. </label>
+                                        <div id="erroCopias" class="invalid-feedback"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-floating mb-3"> <!-- Reduzido de mb-4 para mb-3 -->
+                                <input type="text" class="form-control" id="campoAssunto" placeholder="Assunto do E-mail">
+                                <label for="campoAssunto"><i class="bi bi-chat-left-text-fill me-2"></i>Assunto</label>
+                                <div id="erroAssunto" class="invalid-feedback"></div>
+                            </div>
+
+                            <!-- Editor Quill -->
+                            <div class="editor-wrapper mb-3" id="wrapperCorpo"> <!-- mb-3 -->
+                                <span class="editor-label"><i class="bi bi-file-earmark-richtext-fill me-2"></i>Corpo do E-mail (HTML)</span>
+                                <div id="editor-container"></div>
+                                <div id="erroCorpo" class="text-danger small mt-1" style="display:none;"></div>
+                            </div>
+
+                            <div class="d-grid mt-2">
+                                <!-- Botão menor: removido btn-lg e py-3, adicionado py-2 e fonte menor -->
+                                <button type="submit" id="botaoEnviar" class="btn btn-premium py-2">
+                                    <span id="loaderEnviar" class="spinner-border spinner-border-sm d-none me-2" role="status" aria-hidden="true"></span>
+                                    <span class="fs-6"><i class="bi bi-rocket-takeoff-fill me-2"></i>Enviar E-mail</span>
+                                </button>
+                            </div>
+
+                        </form>
+
+                        <div id="painelResposta" class="mt-3 d-none">
+                            <div id="alertaResposta" class="alert py-2 mb-0" role="alert">
+                                <div id="msgResposta" class="fs-6"></div>
+                                <div id="protocoloResposta" class="mt-1 font-monospace small"></div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
         </div>
-    </header>
+    </main>
 
-    <!-- Formulário -->
-    <form id="formularioEmail" class="painel-corpo" autocomplete="off" novalidate>
-
-        <!-- API Key -->
-        <div class="campo-grupo">
-            <label for="campoApiKey">Chave API (X-API-KEY) <span class="obrigatorio">*</span></label>
-            <input type="password" id="campoApiKey" name="apiKey"
-                   placeholder="Cole a chave de autenticação aqui"
-                   required>
-            <div class="campo-erro-msg" id="erroApiKey"></div>
+    <!-- Footer -->
+    <footer class="footer fixed-bottom bg-premium-dark py-2"> <!-- py-2 mais fino -->
+        <div class="container text-center">
+            <span class="text-muted"><i class="bi bi-robot me-2"></i>C3PO Mail v1.0.0 &mdash; API de envio de e-mails centralizada</span>
         </div>
-
-        <!-- Destinatários -->
-        <div class="campo-grupo">
-            <label for="campoDestinatarios">Destinatários <span class="obrigatorio">*</span></label>
-            <input type="text" id="campoDestinatarios" name="destinatarios"
-                   placeholder="usuario@dominio.com (separe múltiplos com vírgula)"
-                   required>
-            <div class="campo-dica">Separe múltiplos e-mails com vírgula</div>
-            <div class="campo-erro-msg" id="erroDestinatarios"></div>
-        </div>
-
-        <!-- Assunto -->
-        <div class="campo-grupo">
-            <label for="campoAssunto">Assunto <span class="obrigatorio">*</span></label>
-            <input type="text" id="campoAssunto" name="assunto"
-                   placeholder="Assunto do e-mail"
-                   maxlength="255"
-                   required>
-            <div class="campo-erro-msg" id="erroAssunto"></div>
-        </div>
-
-        <!-- Corpo -->
-        <div class="campo-grupo">
-            <label for="campoCorpo">Corpo (HTML permitido) <span class="obrigatorio">*</span></label>
-            <textarea id="campoCorpo" name="corpo"
-                      placeholder="<p>Conteúdo do e-mail aqui...</p>"
-                      required></textarea>
-            <div class="campo-dica">Tags HTML permitidas: p, b, i, u, strong, em, h1-h6, a, img, table, ul, ol, li</div>
-            <div class="campo-erro-msg" id="erroCorpo"></div>
-        </div>
-
-        <!-- Cópias (CC) -->
-        <div class="campo-grupo">
-            <label for="campoCopias">Cópias (CC)</label>
-            <input type="text" id="campoCopias" name="copias"
-                   placeholder="copia@dominio.com (opcional, separe com vírgula)">
-            <div class="campo-erro-msg" id="erroCopias"></div>
-        </div>
-    </form>
-
-    <!-- Botões -->
-    <div class="painel-acoes">
-        <button type="button" id="botaoEnviar" class="botao botao-enviar" onclick="enviarFormulario()">
-            <span id="textoEnviar">Enviar E-mail</span>
-            <div id="loaderEnviar" class="loader"></div>
-        </button>
-        <button type="button" class="botao botao-limpar" onclick="limparFormulario()">
-            Limpar
-        </button>
-    </div>
-
-    <!-- Área de Resposta -->
-    <div id="painelResposta" class="painel-resposta"></div>
-
-    <!-- Rodapé -->
-    <footer class="painel-rodape">
-        C3PO Mail v1.0.0 — API de envio de e-mails centralizada
     </footer>
-</div>
 
-<script>
-    // ============================================
-    // Variáveis e Configuração
-    // ============================================
-    var URL_API = '/api/c3pomail/mail';
-    var URL_HEALTH = '/actuator/health';
-    var INTERVALO_HEALTH_MS = 30000; // 30 segundos
-
-    // ============================================
-    // Health Check — Verifica status da API
-    // ============================================
-    function verificarStatusApi() {
-        var elementoStatus = document.getElementById('statusApi');
-        var textoStatus = document.getElementById('statusTexto');
-
-        fetch(URL_HEALTH, { method: 'GET', cache: 'no-cache' })
-            .then(function(resposta) { return resposta.json(); })
-            .then(function(dados) {
-                if (dados.status === 'UP') {
-                    elementoStatus.className = 'status-api ativo';
-                    textoStatus.textContent = 'API Ativa';
-                } else {
-                    elementoStatus.className = 'status-api inativo';
-                    textoStatus.textContent = 'API Indisponível';
-                }
-            })
-            .catch(function() {
-                elementoStatus.className = 'status-api inativo';
-                textoStatus.textContent = 'API Indisponível';
-            });
-    }
-
-    // Verifica imediatamente e depois a cada 30 segundos
-    verificarStatusApi();
-    setInterval(verificarStatusApi, INTERVALO_HEALTH_MS);
-
-    // ============================================
-    // Validação de Campos (Frontend)
-    // ============================================
-    function validarEmail(email) {
-        var padrao = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
-        return padrao.test(email.trim());
-    }
-
-    /**
-     * Sanitiza uma string para prevenir DOM-Based XSS.
-     * Remove tags HTML e caracteres perigosos.
-     */
-    function sanitizarTextoParaExibicao(texto) {
-        if (!texto) return '';
-        var elemento = document.createElement('div');
-        elemento.textContent = texto;
-        return elemento.innerHTML;
-    }
-
-    function exibirErro(idCampo, idErro, mensagem) {
-        var campo = document.getElementById(idCampo);
-        var erro = document.getElementById(idErro);
-        campo.classList.add('campo-erro');
-        erro.textContent = mensagem;
-        erro.style.display = 'block';
-    }
-
-    function limparErroCampo(idCampo, idErro) {
-        var campo = document.getElementById(idCampo);
-        var erro = document.getElementById(idErro);
-        campo.classList.remove('campo-erro');
-        erro.style.display = 'none';
-    }
-
-    function limparTodosErros() {
-        var campos = ['campoApiKey', 'campoDestinatarios', 'campoAssunto', 'campoCorpo', 'campoCopias'];
-        var erros = ['erroApiKey', 'erroDestinatarios', 'erroAssunto', 'erroCorpo', 'erroCopias'];
-        for (var i = 0; i < campos.length; i++) {
-            limparErroCampo(campos[i], erros[i]);
-        }
-    }
-
-    function validarFormulario() {
-        var valido = true;
-        limparTodosErros();
-
-        // API Key
-        var apiKey = document.getElementById('campoApiKey').value.trim();
-        if (!apiKey) {
-            exibirErro('campoApiKey', 'erroApiKey', 'Informe a chave de autenticação.');
-            valido = false;
-        }
-
-        // Destinatários
-        var destinatariosTexto = document.getElementById('campoDestinatarios').value.trim();
-        if (!destinatariosTexto) {
-            exibirErro('campoDestinatarios', 'erroDestinatarios', 'Informe ao menos um destinatário.');
-            valido = false;
-        } else {
-            var listaDestinatarios = destinatariosTexto.split(',');
-            for (var i = 0; i < listaDestinatarios.length; i++) {
-                if (!validarEmail(listaDestinatarios[i])) {
-                    exibirErro('campoDestinatarios', 'erroDestinatarios',
-                        'E-mail inválido: "' + sanitizarTextoParaExibicao(listaDestinatarios[i].trim()) + '". Use o formato: usuario@dominio.com');
-                    valido = false;
-                    break;
-                }
-            }
-        }
-
-        // Assunto
-        var assunto = document.getElementById('campoAssunto').value.trim();
-        if (!assunto) {
-            exibirErro('campoAssunto', 'erroAssunto', 'Informe o assunto do e-mail.');
-            valido = false;
-        }
-
-        // Corpo
-        var corpo = document.getElementById('campoCorpo').value.trim();
-        if (!corpo) {
-            exibirErro('campoCorpo', 'erroCorpo', 'Informe o corpo do e-mail.');
-            valido = false;
-        }
-
-        // Cópias (opcional, mas valida formato se preenchido)
-        var copiasTexto = document.getElementById('campoCopias').value.trim();
-        if (copiasTexto) {
-            var listaCopias = copiasTexto.split(',');
-            for (var j = 0; j < listaCopias.length; j++) {
-                if (!validarEmail(listaCopias[j])) {
-                    exibirErro('campoCopias', 'erroCopias',
-                        'E-mail de cópia inválido: "' + sanitizarTextoParaExibicao(listaCopias[j].trim()) + '".');
-                    valido = false;
-                    break;
-                }
-            }
-        }
-
-        return valido;
-    }
-
-    // ============================================
-    // Envio do Formulário
-    // ============================================
-    function enviarFormulario() {
-        if (!validarFormulario()) return;
-
-        var botao = document.getElementById('botaoEnviar');
-        var textoEnviar = document.getElementById('textoEnviar');
-        var loader = document.getElementById('loaderEnviar');
-        var painelResposta = document.getElementById('painelResposta');
-
-        // Ativa o loader
-        botao.disabled = true;
-        textoEnviar.textContent = 'Enviando...';
-        loader.style.display = 'block';
-        painelResposta.style.display = 'none';
-
-        // Monta o payload
-        var destinatarios = document.getElementById('campoDestinatarios').value.trim().split(',').map(function(e) { return e.trim(); });
-        var copiasTexto = document.getElementById('campoCopias').value.trim();
-        var copias = copiasTexto ? copiasTexto.split(',').map(function(e) { return e.trim(); }) : [];
-
-        var payload = {
-            destinatarios: destinatarios,
-            assunto: document.getElementById('campoAssunto').value.trim(),
-            corpo: document.getElementById('campoCorpo').value.trim(),
-            copias: copias
-        };
-
-        var apiKey = document.getElementById('campoApiKey').value.trim();
-
-        fetch(URL_API, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-API-KEY': apiKey
-            },
-            body: JSON.stringify(payload)
-        })
-        .then(function(resposta) { return resposta.json(); })
-        .then(function(dados) {
-            painelResposta.style.display = 'block';
-
-            if (dados.status === 'ENVIADO') {
-                painelResposta.className = 'painel-resposta sucesso';
-                painelResposta.innerHTML =
-                    '<strong>&#10003; ' + sanitizarTextoParaExibicao(dados.mensagem) + '</strong>' +
-                    '<div class="resposta-protocolo">Protocolo: ' + sanitizarTextoParaExibicao(dados.protocolo) + '</div>';
-            } else {
-                painelResposta.className = 'painel-resposta erro';
-                painelResposta.innerHTML =
-                    '<strong>&#10007; ' + sanitizarTextoParaExibicao(dados.mensagem) + '</strong>' +
-                    '<div class="resposta-protocolo">Protocolo: ' + sanitizarTextoParaExibicao(dados.protocolo) + '</div>';
-            }
-        })
-        .catch(function(erro) {
-            painelResposta.style.display = 'block';
-            painelResposta.className = 'painel-resposta erro';
-            painelResposta.innerHTML = '<strong>&#10007; Erro de conexão com a API. Verifique se o servidor está ativo.</strong>';
-        })
-        .finally(function() {
-            botao.disabled = false;
-            textoEnviar.textContent = 'Enviar E-mail';
-            loader.style.display = 'none';
-        });
-    }
-
-    // ============================================
-    // Limpar Formulário
-    // ============================================
-    function limparFormulario() {
-        document.getElementById('formularioEmail').reset();
-        limparTodosErros();
-        document.getElementById('painelResposta').style.display = 'none';
-        document.getElementById('campoApiKey').focus();
-    }
-
-    // ============================================
-    // Atalho de Teclado: Enter para Enviar
-    // ============================================
-    document.getElementById('formularioEmail').addEventListener('keydown', function(evento) {
-        if (evento.key === 'Enter' && evento.target.tagName !== 'TEXTAREA') {
-            evento.preventDefault();
-            enviarFormulario();
-        }
-    });
-
-    // ============================================
-    // Foco inicial no campo API Key
-    // ============================================
-    document.getElementById('campoApiKey').focus();
-</script>
-
+    <script src="lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="lib/quill/quill.min.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
